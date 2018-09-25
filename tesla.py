@@ -9,13 +9,11 @@ import logging
 import voluptuous as vol
 
 from homeassistant.const import (
-    ATTR_BATTERY_LEVEL, CONF_PASSWORD, CONF_SCAN_INTERVAL, CONF_USERNAME)
+    CONF_PASSWORD, CONF_SCAN_INTERVAL, CONF_USERNAME)
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import discovery
-from homeassistant.helpers.entity import Entity
-from homeassistant.util import slugify
 
-REQUIREMENTS = ['tesla_api==1.0.2']
+REQUIREMENTS = ['tesla_api==1.0.4']
 
 DOMAIN = 'tesla'
 
@@ -31,9 +29,8 @@ CONFIG_SCHEMA = vol.Schema({
 }, extra=vol.ALLOW_EXTRA)
 
 TESLA_COMPONENTS = [
-    'climate'
+    # 'climate'
 ]
-
 
 def setup(hass, base_config):
     """Set up of Tesla component."""
@@ -46,14 +43,14 @@ def setup(hass, base_config):
 
     api_client = TeslaApiClient(email, password)
 
-    try:    
-        api_client.authenticate()
+    try:
+        vehicles = api_client.list_vehicles()
 
         hass.data[DOMAIN] = {
-            'vehicles': api_client.vehicles.list()
+            'vehicles': vehicles
         }
 
-        _LOGGER.debug("Connected to the Tesla API.")
+        _LOGGER.debug('Connected to the Tesla API, found {} vehicles.'.format(len(vehicles)))
     except AuthenticationError as ex:            
         _LOGGER.error(ex.message)
         return False
