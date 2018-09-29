@@ -33,7 +33,7 @@ CONFIG_SCHEMA = vol.Schema({
     }),
 }, extra=vol.ALLOW_EXTRA)
 
-TESLA_PLATFORMS = ['climate', 'sensor', 'switch']
+TESLA_PLATFORMS = ['climate', 'device_tracker', 'sensor', 'switch']
 
 def setup(hass, base_config):
     """Set up of Tesla component."""
@@ -112,7 +112,7 @@ class TeslaDataManager:
             vehicle.wake_up()
             self.update_charge(vehicle, False)
             self.update_climate(vehicle, False)
-            #self.update_drive(vehicle, False)
+            self.update_drive(vehicle, False)
             self.update_gui(vehicle, False)
             #self.update_state(vehicle, False)
             
