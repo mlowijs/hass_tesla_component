@@ -14,7 +14,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import discovery
 from homeassistant.helpers.event import track_time_interval
 
-REQUIREMENTS = ['tesla_api==1.0.5']
+REQUIREMENTS = ['tesla_api==1.0.6']
 
 DATA_MANAGER = 'data_manager'
 DOMAIN = 'tesla'
