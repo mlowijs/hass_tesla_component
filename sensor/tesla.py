@@ -54,7 +54,7 @@ class TeslaSensorDevice(TeslaDevice, Entity):
 
 class TeslaOutsideTemperatureSensorDevice(TeslaSensorDevice):
     def __init__(self, hass, data_manager, vehicle):
-        super().__init__(hass, data_manager, vehicle, 'outsidetemp')
+        super().__init__(hass, data_manager, vehicle, 'outside_temp')
 
     @property
     def state(self):
