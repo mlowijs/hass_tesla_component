@@ -12,6 +12,7 @@ from homeassistant.const import (
     CONF_PASSWORD, CONF_SCAN_INTERVAL, CONF_USERNAME)
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import discovery
+from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import track_time_interval
 
 REQUIREMENTS = ['tesla_api==1.0.6']
@@ -68,6 +69,24 @@ def setup(hass, base_config):
         discovery.load_platform(hass, platform, DOMAIN)
 
     return True
+
+class TeslaDevice(Entity):
+    def __init__(self, hass, data_manager, vehicle):
+        self._data_manager = data_manager
+        self._vehicle = vehicle
+        self._data = None
+
+        self._update()
+
+        hass.bus.listen(VEHICLE_UPDATED, self._vehicle_updated)
+
+    def _vehicle_updated(self, event):
+        if event.data.get('vin') == self._vehicle.vin:
+            self._update()
+            self.schedule_update_ha_state()
+
+    def _update(self):
+        self._data = self._data_manager.data[self._vehicle.vin]
 
 class TeslaDataManager:
     def __init__(self, hass, vehicles, scan_interval):
