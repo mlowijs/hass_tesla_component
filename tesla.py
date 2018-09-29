@@ -33,7 +33,7 @@ CONFIG_SCHEMA = vol.Schema({
     }),
 }, extra=vol.ALLOW_EXTRA)
 
-TESLA_PLATFORMS = ['climate', 'sensor']
+TESLA_PLATFORMS = ['climate', 'sensor', 'switch']
 
 def setup(hass, base_config):
     """Set up of Tesla component."""

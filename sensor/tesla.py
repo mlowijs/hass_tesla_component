@@ -7,8 +7,9 @@ import logging
 
 from custom_components.tesla import (
     DATA_MANAGER, DOMAIN, PLATFORM_ID, TeslaDevice, VEHICLE_UPDATED)
-from homeassistant.const import (DEVICE_CLASS_BATTERY, LENGTH_KILOMETERS,
-    LENGTH_MILES)
+from homeassistant.const import (DEVICE_CLASS_BATTERY,
+    DEVICE_CLASS_TEMPERATURE, LENGTH_KILOMETERS, LENGTH_MILES, TEMP_CELSIUS,
+    TEMP_FAHRENHEIT)
 from homeassistant.helpers.entity import Entity
 
 _LOGGER = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ DEPENDENCIES = [DOMAIN]
 SENSOR_ID = PLATFORM_ID + '_{}'
 
 def setup_platform(hass, config, add_entities, discovery_info):
-    """Set up the Tesla climate platform."""
+    """Set up the Tesla sensor platform."""
     tesla_data = hass.data[DOMAIN]
     data_manager = tesla_data[DATA_MANAGER]
 
@@ -25,11 +26,16 @@ def setup_platform(hass, config, add_entities, discovery_info):
 
     # Battery sensors
     all_sensors.extend([TeslaBatterySensorDevice(hass, data_manager, vehicle)
-                        for vehicle in tesla_data[DATA_MANAGER].vehicles])
+                        for vehicle in data_manager.vehicles])
 
     # Range sensors
     all_sensors.extend([TeslaRangeSensorDevice(hass, data_manager, vehicle)
-                        for vehicle in tesla_data[DATA_MANAGER].vehicles])
+                        for vehicle in data_manager.vehicles])
+
+    # Outside temp sensors
+    all_sensors.extend([TeslaOutsideTemperatureSensorDevice(hass, data_manager,
+                                                            vehicle)
+                        for vehicle in data_manager.vehicles])
 
     add_entities(all_sensors, True)
 
@@ -45,6 +51,22 @@ class TeslaSensorDevice(TeslaDevice, Entity):
     @property
     def name(self):
         return SENSOR_ID.format(self._vehicle.vin, self._measured_value)
+
+class TeslaOutsideTemperatureSensorDevice(TeslaSensorDevice):
+    def __init__(self, hass, data_manager, vehicle):
+        super().__init__(hass, data_manager, vehicle, 'outsidetemp')
+
+    @property
+    def state(self):
+        return self._data['climate']['outside_temp']
+
+    @property
+    def unit_of_measurement(self):
+        return TEMP_CELSIUS if self._data['gui']['gui_temperature_units'] == 'C' else TEMP_FAHRENHEIT
+
+    @property
+    def device_class(self):
+        return DEVICE_CLASS_TEMPERATURE
 
 class TeslaBatterySensorDevice(TeslaSensorDevice):
     def __init__(self, hass, data_manager, vehicle):

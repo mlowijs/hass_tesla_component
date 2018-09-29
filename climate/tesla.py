@@ -26,7 +26,7 @@ def setup_platform(hass, config, add_entities, discovery_info):
     data_manager = tesla_data[DATA_MANAGER]
 
     climate_devices = [TeslaClimateDevice(hass, data_manager, vehicle)
-                       for vehicle in tesla_data[DATA_MANAGER].vehicles]
+                       for vehicle in data_manager.vehicles]
 
     add_entities(climate_devices, True)
 
