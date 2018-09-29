@@ -7,7 +7,7 @@ from datetime import timedelta
 import logging
 
 from custom_components.tesla import (
-    DATA_MANAGER, DOMAIN, PLATFORM_ID, TeslaDevice, VEHICLE_UPDATED)
+    DATA_MANAGER, DOMAIN, PLATFORM_ID, TeslaDevice)
 from homeassistant.components.climate import (
     ClimateDevice, SUPPORT_ON_OFF, SUPPORT_TARGET_TEMPERATURE)
 from homeassistant.const import (TEMP_CELSIUS, TEMP_FAHRENHEIT)

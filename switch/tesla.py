@@ -6,7 +6,7 @@ https://home-assistant.io/components/climate.tesla/
 import logging
 
 from custom_components.tesla import (
-    DATA_MANAGER, DOMAIN, PLATFORM_ID, TeslaDevice, VEHICLE_UPDATED)
+    DATA_MANAGER, DOMAIN, PLATFORM_ID, TeslaDevice)
 from homeassistant.const import (DEVICE_CLASS_BATTERY,
     DEVICE_CLASS_TEMPERATURE, LENGTH_KILOMETERS, LENGTH_MILES, TEMP_CELSIUS,
     TEMP_FAHRENHEIT)
