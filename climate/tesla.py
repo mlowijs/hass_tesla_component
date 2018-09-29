@@ -9,7 +9,7 @@ import logging
 from homeassistant.components.climate import (
     ClimateDevice, SUPPORT_ON_OFF, SUPPORT_TARGET_TEMPERATURE)
 from custom_components.tesla import (
-    DATA_MANAGER, DOMAIN, PLATFORM_ID, VEHICLE_UPDATED, VEHICLES)
+    DATA_MANAGER, DOMAIN, PLATFORM_ID, VEHICLE_UPDATED)
 from homeassistant.const import (TEMP_CELSIUS, TEMP_FAHRENHEIT)
 from homeassistant.helpers.event import track_point_in_utc_time
 from homeassistant.util import dt as dt_util
@@ -25,7 +25,7 @@ def setup_platform(hass, config, add_entities, discovery_info):
     tesla_data = hass.data[DOMAIN]
 
     climate_devices = [TeslaClimateDevice(hass, vehicle, tesla_data[DATA_MANAGER])
-                       for vehicle in tesla_data[VEHICLES]]
+                       for vehicle in tesla_data[DATA_MANAGER].vehicles]
 
     add_entities(climate_devices, True)
 
@@ -35,6 +35,8 @@ class TeslaClimateDevice(ClimateDevice):
         self._data_manager = data_manager
         self._data = None
 
+        self._update()
+
         hass.bus.listen(VEHICLE_UPDATED, self.vehicle_updated)
 
         _LOGGER.debug('Created climate device for {}.'.format(vehicle.vin))
@@ -43,23 +45,23 @@ class TeslaClimateDevice(ClimateDevice):
         if event.data.get('vin') != self._vehicle.vin:
             return
 
-        self.update()
+        self._update()
 
-    def update(self):
+    def _update(self):
         self._data = self._data_manager.data[self._vehicle.vin]
         _LOGGER.debug('Updated climate device for {}.'.format(self._vehicle.vin))
 
     def turn_on(self):
         self._vehicle.wake_up()
         self._vehicle.climate.start_climate()
-        self._data_manager.update_vehicle(self._vehicle)
+        self._data_manager.update_climate(self._vehicle)
 
         _LOGGER.debug('Turned climate on for {}.'.format(self._vehicle.vin))
 
     def turn_off(self):
         self._vehicle.wake_up()
         self._vehicle.climate.stop_climate()
-        self._data_manager.update_vehicle(self._vehicle)
+        self._data_manager.update_climate(self._vehicle)
 
         _LOGGER.debug('Turned climate off for {}.'.format(self._vehicle.vin))
 
