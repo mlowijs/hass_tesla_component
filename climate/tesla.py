@@ -16,7 +16,7 @@ from homeassistant.util import dt as dt_util
 
 _LOGGER = logging.getLogger(__name__)
 
-DEPENDENCIES = ['tesla']
+DEPENDENCIES = [DOMAIN]
 
 SUPPORT_FLAGS = SUPPORT_ON_OFF | SUPPORT_TARGET_TEMPERATURE
 
@@ -37,11 +37,11 @@ class TeslaClimateDevice(ClimateDevice):
 
         self._update()
 
-        hass.bus.listen(VEHICLE_UPDATED, self.vehicle_updated)
+        hass.bus.listen(VEHICLE_UPDATED, self._vehicle_updated)
 
         _LOGGER.debug('Created climate device for {}.'.format(vehicle.vin))
 
-    def vehicle_updated(self, event):
+    def _vehicle_updated(self, event):
         if event.data.get('vin') != self._vehicle.vin:
             return
 

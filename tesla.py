@@ -90,11 +90,11 @@ class TeslaDataManager:
 
         try:
             vehicle.wake_up()
-            self.update_charge(vehicle, False)
+            #self.update_charge(vehicle, False)
             self.update_climate(vehicle, False)
-            self.update_drive(vehicle, False)
+            #self.update_drive(vehicle, False)
             self.update_gui(vehicle, False)
-            self.update_state(vehicle, False)
+            #self.update_state(vehicle, False)
             
             self._hass.bus.fire(VEHICLE_UPDATED, {'vin': vehicle.vin})
 
