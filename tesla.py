@@ -33,9 +33,7 @@ CONFIG_SCHEMA = vol.Schema({
     }),
 }, extra=vol.ALLOW_EXTRA)
 
-TESLA_PLATFORMS = [
-    'climate'
-]
+TESLA_PLATFORMS = ['climate', 'sensor']
 
 def setup(hass, base_config):
     """Set up of Tesla component."""
@@ -76,18 +74,21 @@ class TeslaDevice(Entity):
         self._vehicle = vehicle
         self._data = None
 
-        self._update()
-
         hass.bus.listen(VEHICLE_UPDATED, self._vehicle_updated)
 
     def _vehicle_updated(self, event):
         if event.data.get('vin') == self._vehicle.vin:
-            self._update()
-            self.schedule_update_ha_state()
+            self.update()
 
-    def _update(self):
+            try:
+                self.schedule_update_ha_state()
+            except:
+                pass
+
+    def update(self):
         self._data = self._data_manager.data[self._vehicle.vin]
 
+"""TeslaDataManager will make sure we do not call the Tesla API too often."""
 class TeslaDataManager:
     def __init__(self, hass, vehicles, scan_interval):
         self._hass = hass
@@ -109,7 +110,7 @@ class TeslaDataManager:
 
         try:
             vehicle.wake_up()
-            #self.update_charge(vehicle, False)
+            self.update_charge(vehicle, False)
             self.update_climate(vehicle, False)
             #self.update_drive(vehicle, False)
             self.update_gui(vehicle, False)
