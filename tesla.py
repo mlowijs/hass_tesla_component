@@ -79,7 +79,7 @@ class TeslaDataManager:
             self._data[vehicle.vin] = {}
 
         self._update()
-        track_time_interval(hass, self._update, scan_interval)
+        track_time_interval(hass, lambda now: self._update(), scan_interval)
 
     def _update(self):
         for vehicle in self._vehicles:
