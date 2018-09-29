@@ -61,6 +61,10 @@ class TeslaChargingSwitch(TeslaDevice, SwitchDevice):
             self.turn_off()
 
     @property
+    def should_poll(self):
+        return False
+
+    @property
     def is_on(self):
         return self._data['charge']['charging_state'] != 'Stopped'
 
