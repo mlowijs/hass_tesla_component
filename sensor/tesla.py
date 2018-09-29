@@ -7,7 +7,8 @@ import logging
 
 from custom_components.tesla import (
     DATA_MANAGER, DOMAIN, PLATFORM_ID, TeslaDevice, VEHICLE_UPDATED)
-from homeassistant.const import (DEVICE_CLASS_BATTERY, LENGTH_KILOMETERS)
+from homeassistant.const import (DEVICE_CLASS_BATTERY, LENGTH_KILOMETERS,
+    LENGTH_MILES)
 from homeassistant.helpers.entity import Entity
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,30 +24,20 @@ def setup_platform(hass, config, add_entities, discovery_info):
     all_sensors = []
 
     # Battery sensors
-    battery_level_getter = lambda data: data['charge']['battery_level']
-    all_sensors.extend([TeslaSensorDevice(hass, data_manager, vehicle, 'soc',
-                                          '%', DEVICE_CLASS_BATTERY,
-                                          battery_level_getter)
+    all_sensors.extend([TeslaBatterySensorDevice(hass, data_manager, vehicle)
                         for vehicle in tesla_data[DATA_MANAGER].vehicles])
 
     # Range sensors
-    range_getter = lambda data: round(data['charge']['battery_range'])
-    all_sensors.extend([TeslaSensorDevice(hass, data_manager, vehicle, 'range',
-                                          LENGTH_KILOMETERS, None,
-                                          range_getter)
+    all_sensors.extend([TeslaRangeSensorDevice(hass, data_manager, vehicle)
                         for vehicle in tesla_data[DATA_MANAGER].vehicles])
 
     add_entities(all_sensors, True)
 
 class TeslaSensorDevice(TeslaDevice, Entity):
-    def __init__(self, hass, data_manager, vehicle, measured_value,
-                 unit_of_measurement, device_class, state_getter):
+    def __init__(self, hass, data_manager, vehicle, measured_value):
         super().__init__(hass, data_manager, vehicle)
 
         self._measured_value = measured_value
-        self._device_class = device_class
-        self._state_getter = state_getter
-        self._unit_of_measurement = unit_of_measurement
 
         _LOGGER.debug('Created ''{}'' sensor device for {}.'.format(
             measured_value, vehicle.vin))
@@ -55,14 +46,30 @@ class TeslaSensorDevice(TeslaDevice, Entity):
     def name(self):
         return SENSOR_ID.format(self._vehicle.vin, self._measured_value)
 
-    @property
-    def device_class(self):
-        return self._device_class
+class TeslaBatterySensorDevice(TeslaSensorDevice):
+    def __init__(self, hass, data_manager, vehicle):
+        super().__init__(hass, data_manager, vehicle, 'soc')
 
     @property
     def state(self):
-        return self._state_getter(self._data)
+        return self._data['charge']['battery_level']
 
     @property
     def unit_of_measurement(self):
-        return self._unit_of_measurement
+        return '%'
+
+    @property
+    def device_class(self):
+        return DEVICE_CLASS_BATTERY
+
+class TeslaRangeSensorDevice(TeslaSensorDevice):
+    def __init__(self, hass, data_manager, vehicle):
+        super().__init__(hass, data_manager, vehicle, 'range')
+
+    @property
+    def state(self):
+        return round(self._data['charge']['battery_range'])
+
+    @property
+    def unit_of_measurement(self):
+        return LENGTH_KILOMETERS if self._data['gui']['gui_distance_units'] == 'km/hr' else LENGTH_MILES
