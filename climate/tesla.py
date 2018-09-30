@@ -44,6 +44,7 @@ class TeslaClimateDevice(TeslaDevice, ClimateDevice):
             self._vehicle.climate.start_climate()
             self._data_manager.update_climate(self._vehicle)
 
+            _LOGGER.debug('Is climate on = {}'.format(self._data['climate']['is_climate_on']))
             _LOGGER.debug('Turned climate on for {}.'.format(self._vehicle.vin))
         except ApiError:
             self.turn_on()
@@ -56,6 +57,7 @@ class TeslaClimateDevice(TeslaDevice, ClimateDevice):
             self._vehicle.climate.stop_climate()
             self._data_manager.update_climate(self._vehicle)
             
+            _LOGGER.debug('Is climate on = {}'.format(self._data['climate']['is_climate_on']))
             _LOGGER.debug('Turned climate off for {}.'.format(self._vehicle.vin))
         except ApiError:
             self.turn_off()
