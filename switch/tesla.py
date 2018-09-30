@@ -27,6 +27,19 @@ def setup_platform(hass, config, add_entities, discovery_info):
 
     add_entities(all_switches, True)
 
+def update_charge(func):
+    def wrapper(self, **kwargs):
+        from tesla_api import ApiError
+
+        try:
+            self._vehicle.wake_up()
+            func(self, **kwargs)
+            self._schedule_update(self._data_manager.update_charge)
+        except ApiError:
+            wrapper(self, **kwargs)
+    
+    return wrapper
+
 class TeslaChargingSwitch(TeslaDevice, SwitchDevice):
     def __init__(self, hass, data_manager, vehicle):
         super().__init__(hass, data_manager, vehicle)
@@ -34,31 +47,15 @@ class TeslaChargingSwitch(TeslaDevice, SwitchDevice):
         _LOGGER.debug('Created charging switch device for {}.'.format(
             vehicle.vin))
 
+    @update_charge
     def turn_on(self):
-        from tesla_api import ApiError
+        self._vehicle.charge.start_charging()
+        _LOGGER.debug('Started charging for {}.'.format(self._vehicle.vin))
 
-        try:
-            self._vehicle.wake_up()
-            self._vehicle.charge.start_charging()
-            self._schedule_update(self._data_manager.update_charge)
-
-            _LOGGER.debug('Turned charging switch on for {}.'.format(
-                self._vehicle.vin))
-        except ApiError:
-            self.turn_on()
-
+    @update_charge
     def turn_off(self):
-        from tesla_api import ApiError
-
-        try:
-            self._vehicle.wake_up()
-            self._vehicle.charge.stop_charging()
-            self._schedule_update(self._data_manager.update_charge)
-
-            _LOGGER.debug('Turned charging switch off for {}.'.format(
-                self._vehicle.vin))
-        except ApiError:
-            self.turn_off()
+        self._vehicle.charge.stop_charging()
+        _LOGGER.debug('Stopped charging for {}.'.format(self._vehicle.vin))
 
     @property
     def should_poll(self):

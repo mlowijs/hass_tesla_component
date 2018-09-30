@@ -74,7 +74,6 @@ def setup(hass, base_config):
 
 class TeslaDevice(Entity):
     def __init__(self, hass, data_manager, vehicle):
-        self._hass = hass
         self._data_manager = data_manager
         self._vehicle = vehicle
         self._data = None
@@ -94,7 +93,9 @@ class TeslaDevice(Entity):
         self._data = self._data_manager.data[self._vehicle.vin]
 
     def _schedule_update(self, update_action):
-        track_point_in_utc_time(self.hass, lambda now: update_action(self._vehicle), dt_util.utcnow() + timedelta(seconds=5))
+        track_point_in_utc_time(self.hass,
+            lambda now: update_action(self._vehicle),
+            dt_util.utcnow() + timedelta(seconds=5))
 
 """TeslaDataManager will make sure we do not call the Tesla API too often."""
 class TeslaDataManager:
@@ -122,7 +123,6 @@ class TeslaDataManager:
             self.update_climate(vehicle, False)
             self.update_drive(vehicle, False)
             self.update_gui(vehicle, False)
-            #self.update_state(vehicle, False)
             
             self._hass.bus.fire(VEHICLE_UPDATED, {'vin': vehicle.vin})
 
@@ -173,18 +173,6 @@ class TeslaDataManager:
             self._data[vehicle.vin]['gui'] = vehicle.get_gui_settings()
         except ApiError:
             self.update_gui(vehicle, fire_event)
-            return
-
-        if fire_event:
-            self._hass.bus.fire(VEHICLE_UPDATED, {'vin': vehicle.vin})
-
-    def update_state(self, vehicle, fire_event=True):
-        from tesla_api import ApiError
-        
-        try:
-            self._data[vehicle.vin]['state'] = vehicle.get_state()
-        except ApiError:
-            self.update_state(vehicle, fire_event)
             return
 
         if fire_event:
