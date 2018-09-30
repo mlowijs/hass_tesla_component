@@ -8,8 +8,8 @@ import logging
 
 from custom_components.tesla import (
     DATA_MANAGER, DOMAIN, PLATFORM_ID, TeslaDevice)
-from homeassistant.components.climate import (
-    ClimateDevice, SUPPORT_ON_OFF, SUPPORT_TARGET_TEMPERATURE)
+from homeassistant.components.climate import (ATTR_TEMPERATURE, ClimateDevice,
+    SUPPORT_ON_OFF, SUPPORT_TARGET_TEMPERATURE)
 from homeassistant.const import (TEMP_CELSIUS, TEMP_FAHRENHEIT)
 from homeassistant.helpers.event import track_point_in_utc_time
 from homeassistant.util import dt as dt_util
@@ -59,6 +59,21 @@ class TeslaClimateDevice(TeslaDevice, ClimateDevice):
             _LOGGER.debug('Turned climate off for {}.'.format(self._vehicle.vin))
         except ApiError:
             self.turn_off()
+
+    def set_temperature(self, **kwargs):
+        from tesla_api import ApiError
+
+        if kwargs.get(ATTR_TEMPERATURE) is None:
+            return
+
+        temperature = kwargs.get(ATTR_TEMPERATURE)
+
+        try:
+            self._vehicle.wake_up()
+            self._vehicle.climate.set_temperature(temperature)
+            self._data_manager.update_climate(self._vehicle)
+        except ApiError:
+            self.set_temperature(**kwargs)            
 
     @property
     def should_poll(self):
