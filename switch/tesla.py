@@ -40,6 +40,8 @@ def update_charge(func):
     
     return wrapper
 
+NOT_CHARGING_STATES = ['Disconnected', 'Stopped']
+
 class TeslaChargingSwitch(TeslaDevice, SwitchDevice):
     def __init__(self, hass, data_manager, vehicle):
         super().__init__(hass, data_manager, vehicle)
@@ -63,7 +65,7 @@ class TeslaChargingSwitch(TeslaDevice, SwitchDevice):
 
     @property
     def is_on(self):
-        return self._data['charge']['charging_state'] != 'Stopped'
+        return self._data['charge']['charging_state'] not in NOT_CHARGING_STATES
 
     @property
     def name(self):
