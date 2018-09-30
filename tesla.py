@@ -50,6 +50,7 @@ def setup(hass, base_config):
     api_client = TeslaApiClient(email, password)
 
     try:
+        _LOGGER.info('Initializing Tesla data manager')
         vehicles = api_client.list_vehicles()
         data_manager = TeslaDataManager(hass, vehicles, scan_interval)
 
@@ -57,6 +58,7 @@ def setup(hass, base_config):
             DATA_MANAGER: data_manager
         }
 
+        _LOGGER.info('Tesla data manager intialized')
         _LOGGER.debug('Connected to the Tesla API, found {} vehicles.'.format(len(vehicles)))
     except AuthenticationError as ex:            
         _LOGGER.error(ex.message)
@@ -91,8 +93,8 @@ class TeslaDevice(Entity):
     def update(self):
         self._data = self._data_manager.data[self._vehicle.vin]
 
-    def _schedule_update(self, method):
-        track_point_in_utc_time(self.hass, lambda now: method(self._vehicle), dt_util.utcnow() + timedelta(seconds=10))
+    def _schedule_update(self, update_action):
+        track_point_in_utc_time(self.hass, lambda now: update_action(self._vehicle), dt_util.utcnow() + timedelta(seconds=5))
 
 """TeslaDataManager will make sure we do not call the Tesla API too often."""
 class TeslaDataManager:
