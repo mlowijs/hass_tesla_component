@@ -81,13 +81,15 @@ class TeslaDevice(Entity):
         hass.bus.listen(VEHICLE_UPDATED, self._vehicle_updated)
 
     def _vehicle_updated(self, event):
-        if event.data.get('vin') == self._vehicle.vin:
-            self.update()
+        if event.data.get('vin') != self._vehicle.vin:
+            return
 
-            try:
-                self.schedule_update_ha_state()
-            except:
-                pass
+        self.update()
+
+        try:
+            self.schedule_update_ha_state()
+        except:
+            pass
 
     def update(self):
         self._data = self._data_manager.data[self._vehicle.vin]
