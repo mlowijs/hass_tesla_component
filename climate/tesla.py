@@ -72,6 +72,8 @@ class TeslaClimateDevice(TeslaDevice, ClimateDevice):
             self._vehicle.wake_up()
             self._vehicle.climate.set_temperature(temperature)
             self._data_manager.update_climate(self._vehicle)
+
+            _LOGGER.debug('Set temperature for {}.'.format(self._vehicle.vin))
         except ApiError:
             self.set_temperature(**kwargs)            
 
