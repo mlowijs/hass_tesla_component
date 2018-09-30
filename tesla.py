@@ -99,6 +99,21 @@ class TeslaDevice(Entity):
             lambda now: update_action(self._vehicle),
             dt_util.utcnow() + timedelta(seconds=5))
 
+def update_wrapper(func):
+    def wrapper(self, vehicle, fire_event):
+        from tesla_api import ApiError
+
+        try:
+            func(self, vehicle, fire_event)
+        except ApiError:
+            wrapper(self, vehicle, fire_event)
+            return
+
+        if fire_event:
+            self._hass.bus.fire(VEHICLE_UPDATED, {'vin': vehicle.vin})
+
+    return wrapper
+
 """TeslaDataManager will make sure we do not call the Tesla API too often."""
 class TeslaDataManager:
     def __init__(self, hass, vehicles, scan_interval):
@@ -132,53 +147,21 @@ class TeslaDataManager:
         except ApiError:
             self.update_vehicle(vehicle)
     
+    @update_wrapper
     def update_charge(self, vehicle, fire_event=True):
-        from tesla_api import ApiError
+        self._data[vehicle.vin]['charge'] = vehicle.charge.get_state()
 
-        try:
-            self._data[vehicle.vin]['charge'] = vehicle.charge.get_state()
-        except ApiError:
-            self.update_charge(vehicle, fire_event)
-            return
-
-        if fire_event:
-            self._hass.bus.fire(VEHICLE_UPDATED, {'vin': vehicle.vin})
-
+    @update_wrapper
     def update_climate(self, vehicle, fire_event=True):
-        from tesla_api import ApiError
-        
-        try:
-            self._data[vehicle.vin]['climate'] = vehicle.climate.get_state()
-        except ApiError:
-            self.update_climate(vehicle, fire_event)
-            return
+        self._data[vehicle.vin]['climate'] = vehicle.climate.get_state()
 
-        if fire_event:
-            self._hass.bus.fire(VEHICLE_UPDATED, {'vin': vehicle.vin})
-
+    @update_wrapper
     def update_drive(self, vehicle, fire_event=True):
-        from tesla_api import ApiError
+        self._data[vehicle.vin]['drive'] = vehicle.get_drive_state()
 
-        try:
-            self._data[vehicle.vin]['drive'] = vehicle.get_drive_state()
-        except ApiError:
-            self.update_drive(vehicle, fire_event)
-            return
-
-        if fire_event:
-            self._hass.bus.fire(VEHICLE_UPDATED, {'vin': vehicle.vin})
-
+    @update_wrapper
     def update_gui(self, vehicle, fire_event=True):
-        from tesla_api import ApiError
-
-        try:
-            self._data[vehicle.vin]['gui'] = vehicle.get_gui_settings()
-        except ApiError:
-            self.update_gui(vehicle, fire_event)
-            return
-
-        if fire_event:
-            self._hass.bus.fire(VEHICLE_UPDATED, {'vin': vehicle.vin})
+        self._data[vehicle.vin]['gui'] = vehicle.get_gui_settings()
 
     @property
     def data(self):
