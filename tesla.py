@@ -5,7 +5,7 @@ For more details about this component, please refer to the documentation at
 https://home-assistant.io/components/tesla/
 """
 import logging
-
+from datetime import timedelta
 import voluptuous as vol
 
 from homeassistant.const import (
@@ -13,7 +13,9 @@ from homeassistant.const import (
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import discovery
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.event import track_time_interval
+from homeassistant.helpers.event import (
+    track_point_in_utc_time, track_time_interval)
+from homeassistant.util import dt as dt_util
 
 REQUIREMENTS = ['tesla_api==1.0.6']
 
@@ -70,6 +72,7 @@ def setup(hass, base_config):
 
 class TeslaDevice(Entity):
     def __init__(self, hass, data_manager, vehicle):
+        self._hass = hass
         self._data_manager = data_manager
         self._vehicle = vehicle
         self._data = None
@@ -87,6 +90,9 @@ class TeslaDevice(Entity):
 
     def update(self):
         self._data = self._data_manager.data[self._vehicle.vin]
+
+    def _schedule_update(self, method):
+        track_point_in_utc_time(self.hass, lambda now: method(self._vehicle), dt_util.utcnow() + timedelta(seconds=10))
 
 """TeslaDataManager will make sure we do not call the Tesla API too often."""
 class TeslaDataManager:

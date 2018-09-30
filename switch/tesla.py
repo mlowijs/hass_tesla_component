@@ -40,7 +40,7 @@ class TeslaChargingSwitch(TeslaDevice, SwitchDevice):
         try:
             self._vehicle.wake_up()
             self._vehicle.charge.start_charging()
-            self._data_manager.update_charge(self._vehicle)
+            self._schedule_update(self._data_manager.update_charge)
 
             _LOGGER.debug('Turned charging switch on for {}.'.format(
                 self._vehicle.vin))
@@ -53,7 +53,7 @@ class TeslaChargingSwitch(TeslaDevice, SwitchDevice):
         try:
             self._vehicle.wake_up()
             self._vehicle.charge.stop_charging()
-            self._data_manager.update_charge(self._vehicle)
+            self._schedule_update(self._data_manager.update_charge)
 
             _LOGGER.debug('Turned charging switch off for {}.'.format(
                 self._vehicle.vin))

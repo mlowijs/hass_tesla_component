@@ -11,8 +11,6 @@ from custom_components.tesla import (
 from homeassistant.components.climate import (ATTR_TEMPERATURE, ClimateDevice,
     SUPPORT_ON_OFF, SUPPORT_TARGET_TEMPERATURE)
 from homeassistant.const import (TEMP_CELSIUS, TEMP_FAHRENHEIT)
-from homeassistant.helpers.event import track_point_in_utc_time
-from homeassistant.util import dt as dt_util
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,9 +40,8 @@ class TeslaClimateDevice(TeslaDevice, ClimateDevice):
         try:
             self._vehicle.wake_up()
             self._vehicle.climate.start_climate()
-            self._data_manager.update_climate(self._vehicle)
+            self._schedule_update(self._data_manager.update_climate)
 
-            _LOGGER.debug('Is climate on = {}'.format(self._data['climate']['is_climate_on']))
             _LOGGER.debug('Turned climate on for {}.'.format(self._vehicle.vin))
         except ApiError:
             self.turn_on()
@@ -55,9 +52,8 @@ class TeslaClimateDevice(TeslaDevice, ClimateDevice):
         try:
             self._vehicle.wake_up()
             self._vehicle.climate.stop_climate()
-            self._data_manager.update_climate(self._vehicle)
+            self._schedule_update(self._data_manager.update_climate)
             
-            _LOGGER.debug('Is climate on = {}'.format(self._data['climate']['is_climate_on']))
             _LOGGER.debug('Turned climate off for {}.'.format(self._vehicle.vin))
         except ApiError:
             self.turn_off()
@@ -73,7 +69,7 @@ class TeslaClimateDevice(TeslaDevice, ClimateDevice):
         try:
             self._vehicle.wake_up()
             self._vehicle.climate.set_temperature(temperature)
-            self._data_manager.update_climate(self._vehicle)
+            self._schedule_update(self._data_manager.update_climate)
 
             _LOGGER.debug('Set temperature for {}.'.format(self._vehicle.vin))
         except ApiError:
