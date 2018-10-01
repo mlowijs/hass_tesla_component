@@ -43,7 +43,6 @@ def update_climate(func):
     
     return wrapper
 
-
 class TeslaClimateDevice(TeslaDevice, ClimateDevice):
     def __init__(self, hass, data_manager, vehicle):
         super().__init__(hass, data_manager, vehicle)
