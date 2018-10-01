@@ -17,7 +17,7 @@ from homeassistant.helpers.event import (
     track_point_in_utc_time, track_time_interval)
 from homeassistant.util import dt as dt_util
 
-REQUIREMENTS = ['tesla_api==1.0.6']
+REQUIREMENTS = ['tesla_api==1.0.7']
 
 DATA_MANAGER = 'data_manager'
 DOMAIN = 'tesla'
