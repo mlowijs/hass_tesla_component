@@ -96,7 +96,7 @@ class TeslaDevice(Entity):
 
     def _schedule_update(self, update_action):
         track_point_in_utc_time(self.hass,
-            lambda now: update_action(self._vehicle),
+            lambda now: update_action(self._vehicle, True),
             dt_util.utcnow() + timedelta(seconds=5))
 
 def update_wrapper(func):
@@ -140,6 +140,7 @@ class TeslaDataManager:
             self.update_climate(vehicle, False)
             self.update_drive(vehicle, False)
             self.update_gui(vehicle, False)
+            self.update_state(vehicle, False)
             
             self._hass.bus.fire(VEHICLE_UPDATED, {'vin': vehicle.vin})
 
@@ -162,6 +163,10 @@ class TeslaDataManager:
     @update_wrapper
     def update_gui(self, vehicle, fire_event=True):
         self._data[vehicle.vin]['gui'] = vehicle.get_gui_settings()
+
+    @update_wrapper
+    def update_state(self, vehicle, fire_event=True):
+        self._data[vehicle.vin]['state'] = vehicle.get_state()
 
     @property
     def data(self):

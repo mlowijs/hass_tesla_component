@@ -7,9 +7,9 @@ import logging
 
 from custom_components.tesla import (
     DATA_MANAGER, DOMAIN, PLATFORM_ID, TeslaDevice)
-from homeassistant.const import (DEVICE_CLASS_BATTERY,
-    DEVICE_CLASS_TEMPERATURE, LENGTH_KILOMETERS, LENGTH_MILES, TEMP_CELSIUS,
-    TEMP_FAHRENHEIT)
+from homeassistant.const import (
+    DEVICE_CLASS_BATTERY, DEVICE_CLASS_TEMPERATURE, LENGTH_KILOMETERS,
+    LENGTH_MILES, TEMP_CELSIUS, TEMP_FAHRENHEIT)
 from homeassistant.helpers.entity import Entity
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,15 +24,12 @@ def setup_platform(hass, config, add_entities, discovery_info):
 
     all_sensors = []
 
-    # Battery sensors
     all_sensors.extend([TeslaBatterySensorDevice(hass, data_manager, vehicle)
                         for vehicle in data_manager.vehicles])
 
-    # Range sensors
     all_sensors.extend([TeslaRangeSensorDevice(hass, data_manager, vehicle)
                         for vehicle in data_manager.vehicles])
 
-    # Outside temp sensors
     all_sensors.extend([TeslaOutsideTemperatureSensorDevice(hass, data_manager,
                                                             vehicle)
                         for vehicle in data_manager.vehicles])
