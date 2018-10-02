@@ -83,6 +83,8 @@ def setup(hass, base_config):
             return
 
         func = getattr(vehicle.controls, call.service)
+
+        vehicle.wake_up()
         func()
 
     for service in CONTROLS_SERVICES:
