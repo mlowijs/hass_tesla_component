@@ -64,18 +64,17 @@ class TeslaSunroofSwitch(TeslaDevice, SwitchDevice):
     def __init__(self, hass, data_manager, vehicle):
         super().__init__(hass, data_manager, vehicle)
 
-        _LOGGER.debug('Created sunroof switch device for {}.'.format(
-            vehicle.vin))
+        _LOGGER.debug('Created sunroof switch device for %s', vehicle.vin)
 
     @update_state
     def turn_on(self):
         self._vehicle.controls.vent_sunroof()
-        _LOGGER.debug('Vent sunroof for {}.'.format(self._vehicle.vin))
+        _LOGGER.debug('Vent sunroof for %s', self._vehicle.vin)
 
     @update_state
     def turn_off(self):
         self._vehicle.controls.close_sunroof()
-        _LOGGER.debug('Closed sunroof for {}.'.format(self._vehicle.vin))
+        _LOGGER.debug('Closed sunroof for %s', self._vehicle.vin)
 
     @property
     def should_poll(self):
@@ -93,18 +92,17 @@ class TeslaChargingSwitch(TeslaDevice, SwitchDevice):
     def __init__(self, hass, data_manager, vehicle):
         super().__init__(hass, data_manager, vehicle)
 
-        _LOGGER.debug('Created charging switch device for {}.'.format(
-            vehicle.vin))
+        _LOGGER.debug('Created charging switch device for %s', vehicle.vin)
 
     @update_charge
     def turn_on(self):
         self._vehicle.charge.start_charging()
-        _LOGGER.debug('Started charging for {}.'.format(self._vehicle.vin))
+        _LOGGER.debug('Started charging for %s', self._vehicle.vin)
 
     @update_charge
     def turn_off(self):
         self._vehicle.charge.stop_charging()
-        _LOGGER.debug('Stopped charging for {}.'.format(self._vehicle.vin))
+        _LOGGER.debug('Stopped charging for %s', self._vehicle.vin)
 
     @property
     def should_poll(self):

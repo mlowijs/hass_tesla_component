@@ -37,7 +37,7 @@ def update_climate(func):
             func(self, **kwargs)
             self._schedule_update(self._data_manager.update_climate)
 
-            _LOGGER.debug('Turned climate on for {}.'.format(self._vehicle.vin))
+            _LOGGER.debug('Turned climate on for %s', self._vehicle.vin)
         except ApiError:
             wrapper(self, **kwargs)
     
@@ -47,17 +47,17 @@ class TeslaClimateDevice(TeslaDevice, ClimateDevice):
     def __init__(self, hass, data_manager, vehicle):
         super().__init__(hass, data_manager, vehicle)
 
-        _LOGGER.debug('Created climate device for {}.'.format(vehicle.vin))
+        _LOGGER.debug('Created climate device for %s', vehicle.vin)
 
     @update_climate
     def turn_on(self):
         self._vehicle.climate.start_climate()
-        _LOGGER.debug('Turned climate on for {}.'.format(self._vehicle.vin))
+        _LOGGER.debug('Turned climate on for %s', self._vehicle.vin)
 
     @update_climate
     def turn_off(self):
         self._vehicle.climate.stop_climate()
-        _LOGGER.debug('Turned climate off for {}.'.format(self._vehicle.vin))
+        _LOGGER.debug('Turned climate off for %s', self._vehicle.vin)
 
     @update_climate
     def set_temperature(self, **kwargs):
@@ -67,7 +67,7 @@ class TeslaClimateDevice(TeslaDevice, ClimateDevice):
         temperature = kwargs.get(ATTR_TEMPERATURE)
 
         self._vehicle.climate.set_temperature(temperature)        
-        _LOGGER.debug('Set temperature for {}.'.format(self._vehicle.vin))  
+        _LOGGER.debug('Set temperature for %s', self._vehicle.vin)
 
     @property
     def should_poll(self):

@@ -19,9 +19,10 @@ from homeassistant.util import dt as dt_util
 
 REQUIREMENTS = ['tesla_api==1.0.7']
 
+ATTR_VIN = 'vin'
 DATA_MANAGER = 'data_manager'
 DOMAIN = 'tesla'
-PLATFORM_ID = 'tesla_{}'
+PLATFORM_ID = DOMAIN + '_{}'
 VEHICLE_UPDATED = 'tesla_vehicle_updated'
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,7 +36,13 @@ CONFIG_SCHEMA = vol.Schema({
     }),
 }, extra=vol.ALLOW_EXTRA)
 
+SERVICE_SCHEMA = vol.Schema({
+    vol.Required(ATTR_VIN): cv.string,
+})
+
 TESLA_PLATFORMS = ['climate', 'device_tracker', 'sensor', 'switch']
+
+CONTROLS_SERVICES = ['flash_lights', 'honk_horn']
 
 def setup(hass, base_config):
     """Set up of Tesla component."""
@@ -59,13 +66,28 @@ def setup(hass, base_config):
         }
 
         _LOGGER.info('Tesla data manager intialized')
-        _LOGGER.debug('Connected to the Tesla API, found {} vehicles.'.format(len(vehicles)))
+        _LOGGER.debug('Connected to the Tesla API, found %d vehicles.', len(vehicles))
     except AuthenticationError as ex:            
         _LOGGER.error(ex.message)
         return False
     except ApiError as ex:
         _LOGGER.error(ex.message)
         return False
+
+    def execute_controls_service(call):
+        vin = call.data.get(ATTR_VIN)
+        vehicle = data_manager.get_vehicle(vin)
+
+        if not vehicle:
+            _LOGGER.error('No vehicle found with VIN %s', vin)
+            return
+
+        func = getattr(vehicle.controls, call.service)
+        func()
+
+    for service in CONTROLS_SERVICES:
+        hass.services.register(DOMAIN, service, execute_controls_service,
+            schema=SERVICE_SCHEMA)
 
     for platform in TESLA_PLATFORMS:
         discovery.load_platform(hass, platform, DOMAIN)
@@ -81,7 +103,7 @@ class TeslaDevice(Entity):
         hass.bus.listen(VEHICLE_UPDATED, self._vehicle_updated)
 
     def _vehicle_updated(self, event):
-        if event.data.get('vin') != self._vehicle.vin:
+        if event.data.get(ATTR_VIN) != self._vehicle.vin:
             return
 
         self.update()
@@ -110,7 +132,7 @@ def update_wrapper(func):
             return
 
         if fire_event:
-            self._hass.bus.fire(VEHICLE_UPDATED, {'vin': vehicle.vin})
+            self._hass.bus.fire(VEHICLE_UPDATED, {ATTR_VIN: vehicle.vin})
 
     return wrapper
 
@@ -142,9 +164,9 @@ class TeslaDataManager:
             self.update_gui(vehicle, False)
             self.update_state(vehicle, False)
             
-            self._hass.bus.fire(VEHICLE_UPDATED, {'vin': vehicle.vin})
+            self._hass.bus.fire(VEHICLE_UPDATED, {ATTR_VIN: vehicle.vin})
 
-            _LOGGER.debug('Updated data for {}'.format(vehicle.vin))
+            _LOGGER.debug('Updated data for %s', vehicle.vin)
         except ApiError:
             self.update_vehicle(vehicle)
     
@@ -167,6 +189,9 @@ class TeslaDataManager:
     @update_wrapper
     def update_state(self, vehicle, fire_event=True):
         self._data[vehicle.vin]['state'] = vehicle.get_state()
+
+    def get_vehicle(self, vin):
+        return next((v for v in self.vehicles if v.vin == vin), None)
 
     @property
     def data(self):

@@ -42,8 +42,8 @@ class TeslaSensorDevice(TeslaDevice, Entity):
 
         self._measured_value = measured_value
 
-        _LOGGER.debug('Created ''{}'' sensor device for {}.'.format(
-            measured_value, vehicle.vin))
+        _LOGGER.debug('Created %s sensor device for %s',
+            measured_value, vehicle.vin)
 
     @property
     def name(self):
