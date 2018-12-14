@@ -92,7 +92,7 @@ def setup(hass, base_config):
             schema=SERVICE_SCHEMA)
 
     for platform in TESLA_PLATFORMS:
-        discovery.load_platform(hass, platform, DOMAIN)
+        discovery.load_platform(hass, platform, DOMAIN, None, base_config)
 
     return True
 
